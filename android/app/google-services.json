@@ -1,15 +1,15 @@
 {
     "project_info": {
       "project_number": "954136402194",
-      "project_id": "zyrn-fitness-app",
-      "storage_bucket": "zyrn-fitness-app.appspot.com"
+      "project_id": "zyrn-habits-app",
+      "storage_bucket": "zyrn-habits-app.appspot.com"
     },
     "client": [
       {
         "client_info": {
           "mobilesdk_app_id": "1:954136402194:android:8c1ea5775e1a9150eabbcb",
           "android_client_info": {
-            "package_name": "dev.zyrn.fitness"
+            "package_name": "org.jamduo.habits"
           }
         },
         "oauth_client": [

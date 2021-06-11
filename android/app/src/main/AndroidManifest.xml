@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="dev.zyrn.fitness">
+    package="org.jamduo.habits">
    <application
-        android:label="fitness"
+        android:label="habits"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

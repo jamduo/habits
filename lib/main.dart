@@ -1,8 +1,8 @@
-// import 'package:fitness/auth/login.dart';
+// import 'package:habits/auth/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:fitness/auth/auth_provider.dart';
-import 'package:fitness/theme.dart';
+import 'package:habits/auth/auth_provider.dart';
+import 'package:habits/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -38,7 +38,7 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Fitness',
+      title: 'Habits',
       themeMode: ThemeMode.system,
       theme: makeLightTheme(),
       darkTheme: makeDarkTheme(),

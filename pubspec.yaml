@@ -1,5 +1,5 @@
-name: fitness
-description: A fitness application for helping people to track and analyse their workouts
+name: habits
+description: A habits application for helping people to track and analyse their workouts
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.

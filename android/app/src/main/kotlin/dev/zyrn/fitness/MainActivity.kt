@@ -1,4 +1,4 @@
-package dev.zyrn.fitness
+package org.jamduo.habits
 
 import io.flutter.embedding.android.FlutterActivity
 
