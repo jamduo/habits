@@ -1,39 +1,39 @@
 {
-    "project_info": {
-      "project_number": "954136402194",
-      "project_id": "zyrn-habits-app",
-      "storage_bucket": "zyrn-habits-app.appspot.com"
-    },
-    "client": [
-      {
-        "client_info": {
-          "mobilesdk_app_id": "1:954136402194:android:8c1ea5775e1a9150eabbcb",
-          "android_client_info": {
-            "package_name": "org.jamduo.habits"
-          }
-        },
-        "oauth_client": [
-          {
-            "client_id": "954136402194-ckku2a7o4mn2q4proum5imk2lj7vubr5.apps.googleusercontent.com",
-            "client_type": 3
-          }
-        ],
-        "api_key": [
-          {
-            "current_key": "AIzaSyC3WevcTqGifJYtQ6kuG8cIqyoReNFUpDg"
-          }
-        ],
-        "services": {
-          "appinvite_service": {
-            "other_platform_oauth_client": [
-              {
-                "client_id": "954136402194-ckku2a7o4mn2q4proum5imk2lj7vubr5.apps.googleusercontent.com",
-                "client_type": 3
-              }
-            ]
-          }
+  "project_info": {
+    "project_number": "341094229359",
+    "project_id": "jamduo-habits",
+    "storage_bucket": "jamduo-habits.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:341094229359:android:8d4b4c6243c2e2864ef49a",
+        "android_client_info": {
+          "package_name": "org.jamduo.habits"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "341094229359-4bhdebtt336tp7egm53cn4q1h1vsdcp2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABSb4CoAVeAcqLv-CQAIEzQfrVAFjFLfc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "341094229359-4bhdebtt336tp7egm53cn4q1h1vsdcp2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
-    ],
-    "configuration_version": "1"
+    }
+  ],
+  "configuration_version": "1"
 }

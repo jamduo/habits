@@ -27,6 +27,7 @@ class AuthProvider extends ChangeNotifier {
     if (!_isReady) {
       await init();
     }
+    
     final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
     final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount!.authentication;
 
