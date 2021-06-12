@@ -10,22 +10,14 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final Link link = HttpLink('http://10.0.2.2:4000/graphql');
+  
 
-  ValueNotifier<GraphQLClient> client = ValueNotifier(
-    GraphQLClient(
-      link: link,
-      cache: GraphQLCache(),
-    ),
-  );
-
-  runApp(new App(client: client));
+  runApp(new App());
 }
 
 class App extends StatefulWidget {
-  final ValueNotifier<GraphQLClient> client;
   // Create the initialization Future outside of `build`:
-  const App ({ Key? key, required this.client }): super(key: key);
+  const App ({ Key? key }): super(key: key);
   @override
   _AppState createState() => _AppState();
 }
@@ -59,26 +51,63 @@ class _AppState extends State<App> {
 
         // Once complete, show your application
         if (snapshot.connectionState == ConnectionState.done) {
-          return _with_graphql();
+          return _with_auth(context);
         }
 
-        return Loading(message: "Waiting for authentication server...",);
+        return Loading(message: "Connecting to our servers...",);
       },
     );
   }
 
-  Widget _with_graphql() {
+  Widget _with_auth(BuildContext context) {
+    AuthProvider auth = AuthProvider();
+    
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(
-          value: AuthProvider(),
+          value: auth,
         ),
       ],
-      child: 
-        GraphQLProvider(
-        client: widget.client,
-        child: HomePage(),
-      ),
+      child: (auth.user == null) ? _not_signed_in(context, auth) : _with_graphql(context, auth),
+    );
+  }
+
+  Widget _not_signed_in(BuildContext context, AuthProvider auth) {
+    auth.signInBackground();
+
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("Sign In"),
+        ),
+        body: CenteredList(children: [
+            auth.canBackgroundSignIn ? CircularProgressIndicator(color: Theme.of(context).accentColor) : SizedBox.shrink(),
+            Text('You are currently not logged in. Please sign in to continue.',),
+            ElevatedButton(onPressed: () => auth.signIn(), child: Text("Sign In")),
+          ],
+        ),
+    );
+  }
+
+  Widget _with_graphql(BuildContext context, AuthProvider auth) {
+    final Link link = HttpLink(
+      'https://hasura.jamduo.org/v1/graphql',
+      defaultHeaders: {
+        'x-hasura-admin-secret': 'password',
+        'X-GoogleUID': auth.user!.uid,
+      },
+    );
+
+    GraphQLClient client = GraphQLClient( link: link, cache: GraphQLCache() );
+
+    ValueNotifier<GraphQLClient> notifier = ValueNotifier(client);
+
+    client.mutate(MutationOptions(document: gql(upsertUser), variables: { 'google_uid': auth.user!.uid }))
+        .then((value) => print("Signed In as User #" + value.data!['user']['id'].toString()))
+        .catchError((err) => print("Unable to register sign in: " + err.toString()));
+
+    return GraphQLProvider(
+      client: notifier,
+      child: HomePage(),
     );
   }
 
@@ -139,6 +168,16 @@ class WithPadding extends StatelessWidget {
   }
 }
 
+const String upsertUser = r'''
+  mutation MyMutation($google_uid: String) {
+    user: insert_users_one(object: {google_uid: $google_uid, last_seen: "now()"}, on_conflict: {constraint: users_google_uid_key, update_columns: last_seen}) {
+      id
+      google_uid
+      last_seen
+    }
+  }
+''';
+
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -159,7 +198,11 @@ class HomePage extends StatelessWidget {
         ),
       );
     } else  {
-      // return _test(context);
+      GraphQLClient client = GraphQLProvider.of(context).value;
+      print(user.uid);
+      client.mutate(MutationOptions(document: gql(upsertUser), variables: { 'google_uid': user.uid }))
+        .then((value) => print(JsonToString(value.data!['user'])))
+        .catchError((err) => print(err));
       return _build(context, user);
     }
   }
@@ -173,14 +216,12 @@ class HomePage extends StatelessWidget {
           LogoutIcon(),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text('Weclome $name',),
-          ],
-        ),
-      ),
+      body: _test(context),
+      // CenteredList(
+      //   children: [
+      //     Text('Weclome $name',), 
+      //   ],
+      // ),
       // floatingActionButton: FloatingActionButton(
       //   onPressed: () => null,
       //   tooltip: 'Increment',
@@ -192,9 +233,10 @@ class HomePage extends StatelessWidget {
   Widget _test(BuildContext context) {
     String queryAllUsers = """
       query getUsers { 
-        users: allUsers {
-          id,
+        users {
+          id
           google_uid
+          last_seen
         }
       }
     """;
@@ -211,14 +253,15 @@ class HomePage extends StatelessWidget {
       // while fetchMore() can be used for pagination purpose
       builder: (QueryResult result, { VoidCallback? refetch, FetchMore? fetchMore }) {
         if (result.hasException) {
-            return Text(result.exception.toString());
+            print(result.exception);
+            return Text("Error");
         }
 
         if (result.isLoading) {
           return Text('Loading');
         }
-
-        return Text("Loaded");
+        List<dynamic> users = result.data!['users'];
+        return CenteredList(children: users.map((user) => Text(JsonToString(user))).toList());
         // it can be either Map or List
         // List repositories = result.data['viewer']['repositories']['nodes'];
 
@@ -232,4 +275,8 @@ class HomePage extends StatelessWidget {
       },
     );
   }
+}
+
+String JsonToString(Map<String, dynamic> json) {
+  return "(" + json.values.map((value) => value.toString()).join(", ") + ")";
 }
