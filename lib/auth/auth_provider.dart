@@ -8,26 +8,13 @@ import 'package:provider/provider.dart';
 
 class AuthProvider extends ChangeNotifier {
   GoogleSignIn _googleSignIn = GoogleSignIn();
-  bool _isReady = false;
-  late FirebaseApp _firebase;
-  late FirebaseAuth _auth;
-  User? _user = null;
+  FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<void> init() {
-    return Firebase.initializeApp().then((app) {
-      _firebase = app;
-      _auth = FirebaseAuth.instance;
-      _isReady = true;
-
-      print("Connected to firebase: " + app.name);
-    });
+  void init() {
+    print("Connected to firebase: " + Firebase.app().name);
   }
 
-  Future<User> signIn() async {
-    if (!_isReady) {
-      await init();
-    }
-    
+  Future<User> signIn() async {    
     final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
     final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount!.authentication;
 
@@ -46,7 +33,6 @@ class AuthProvider extends ChangeNotifier {
       final User currentUser = _auth.currentUser!;
       assert(user.uid == currentUser.uid);
 
-      _user = user;
       
       notifyListeners();
       return currentUser;
@@ -56,10 +42,6 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<User?> signInBackground() async {
-    if (!_isReady) {
-      await init();
-    }
-
     if (canBackgroundSignIn) {
       final User? user = _auth.currentUser;
 
@@ -67,7 +49,6 @@ class AuthProvider extends ChangeNotifier {
         assert(!user.isAnonymous);
         await user.getIdToken();
 
-        _user = user;
         
         notifyListeners();
         return _auth.currentUser!;
@@ -80,25 +61,16 @@ class AuthProvider extends ChangeNotifier {
   }
 
   User? get user {
-    if (!_isReady) {
-      return null;
-    }
-
     return _auth.currentUser;
   }
 
   bool get canBackgroundSignIn {
-    return _isReady && _auth.currentUser != null;
+    return _auth.currentUser != null;
   }
 
-  Future<void> signOut() async {
-    if (!_isReady) {
-      await init();
-    }
-    
+  Future<void> signOut() async {  
     await _googleSignIn.signOut();
     await _auth.signOut();
-    _user = null;
     notifyListeners();
   }
 
