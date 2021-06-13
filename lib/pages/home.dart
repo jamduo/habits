@@ -6,22 +6,21 @@ import 'package:habits/pages/util.dart';
 import 'package:provider/provider.dart';
 import 'package:gql/ast.dart';
 
-DocumentNode queryUpsertUser = gql(r'''
-  mutation MyMutation($google_uid: String) {
-    user: insert_users_one(object: {google_uid: $google_uid, last_seen: "now()"}, on_conflict: {constraint: users_google_uid_key, update_columns: last_seen}) {
+DocumentNode queryAllHabits = gql(r'''
+  query allHabits {
+    habits {
       id
-      google_uid
-      last_seen
+      title
     }
   }
 ''');
 
-DocumentNode queryAllUsers = gql(r'''
-  query getUsers { 
-    users {
+DocumentNode queryAddHabit = gql(r'''
+  mutation addHabit($owner_id: Int, $title: String) {
+    habit: insert_habits_one(object: {owner_id: $owner_id, title: $title}) {
       id
-      google_uid
-      last_seen
+      owner_id
+      title
     }
   }
 ''');
@@ -42,33 +41,72 @@ class HomePage extends StatelessWidget {
         ],
       ),
       body: _build(context),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () => null,
-      //   tooltip: 'Increment',
-      //   child: Icon(Icons.add),
-      // ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          final GraphQLClient client = GraphQLProvider.of(context).value;
+          client.mutate(MutationOptions(document: queryAddHabit, variables: { 'owner_id': auth.user_id, 'title': "testy" }))
+            .then((value) => print("Added habit #" + value.data!['habit']['id'].toString() + " " + value.data!['habit']['title']))
+            .catchError((err) => print("Unable to add a habit: " + err.toString()));
+        },
+        tooltip: 'Add Habit',
+        child: Icon(Icons.add),
+      ),
     );
   }
 
   Widget _build(BuildContext context) {
+    User current_user = Provider.of<AuthProvider>(context).user!;
     return Query(
       options: QueryOptions(
-        document: queryAllUsers,
+        document: queryAllHabits,
         pollInterval: Duration(seconds: 10),
       ),
       // Just like in apollo refetch() could be used to manually trigger a refetch
       // while fetchMore() can be used for pagination purpose
       builder: (QueryResult result, { VoidCallback? refetch, FetchMore? fetchMore }) {
         if (result.hasException) {
-            print(result.exception);
-            return Text("Error");
+            return Text(result.exception.toString());
         }
 
         if (result.isLoading) {
           return Text('Loading');
         }
-        List<dynamic> users = result.data!['users'];
-        return CenteredList(children: users.map((user) => Text(JsonToString(user))).toList());
+
+        List<dynamic> habits = result.data!['habits'];
+        if (habits.length == 0) {
+          return Padding(
+            padding: EdgeInsets.all(16),
+            child: Text("Add a habit and it will show up here...", style: TextStyle(fontSize: 18) ), 
+          );
+        }
+
+        return ListView.builder(
+          padding: EdgeInsets.only(top: 16, bottom: 16),
+          itemCount: habits.length * 2,
+          itemBuilder: (context, i) {
+            if (i.isOdd) return Divider();
+        
+            final index = i ~/ 2;
+            final habit = habits[index];
+            return Padding(
+              padding: EdgeInsets.only(left: 8, right: 8),
+              child: ListTile(
+                title: Text(
+                  habit['title'].toString(),
+                  style: TextStyle(fontSize: 18.0),
+                ),
+                trailing: IconButton(
+                  icon: Icon(
+                    true ? Icons.favorite : Icons.favorite_border,
+                    color: true ? Colors.red : null,
+                  ),
+                  onPressed: () { },
+                ),
+                onTap: () { },
+              ),
+            );
+          }
+        );
       },
     );
   }

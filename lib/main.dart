@@ -2,6 +2,7 @@
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:habits/auth/auth_provider.dart';
+import 'package:habits/graphql.dart';
 import 'package:habits/pages/home.dart';
 import 'package:habits/pages/util.dart';
 import 'package:habits/theme.dart';
@@ -54,17 +55,34 @@ class _AppState extends State<App> {
     );
   }
 
-  Widget _withAuth(BuildContext context) {
-    AuthProvider auth = AuthProvider();
-    
+  Widget _withAuth(BuildContext context) {   
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(
-          value: auth,
+          value: AuthProvider(),
         ),
       ],
-      child: (auth.user == null) ? _notSignedIn(context, auth) : _withGraphQL(context, auth),
+      child: RequireAuthenitcation(child: HomePage()),
     );
+  }
+
+  Widget _Error(String s) {
+    return CenteredList(
+      children: [
+        WithPadding(child: Text(s)),
+      ],
+    );
+  }  
+}
+
+class RequireAuthenitcation extends StatelessWidget {
+  final Widget? child;
+  const RequireAuthenitcation({ Key? key, this.child }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    AuthProvider auth = Provider.of<AuthProvider>(context, listen: true);
+    return (auth.user == null) ? _notSignedIn(context, auth) : _withGraphQL(context, auth);
   }
 
   Widget _notSignedIn(BuildContext context, AuthProvider auth) {
@@ -84,34 +102,12 @@ class _AppState extends State<App> {
   }
 
   Widget _withGraphQL(BuildContext context, AuthProvider auth) {
-    final Link link = HttpLink(
-      'https://hasura.jamduo.org/v1/graphql',
-      defaultHeaders: {
-        'x-hasura-admin-secret': 'password',
-        'X-GoogleUID': auth.user!.uid,
-      },
-    );
-
-    GraphQLClient client = GraphQLClient( link: link, cache: GraphQLCache() );
-
-    ValueNotifier<GraphQLClient> notifier = ValueNotifier(client);
-
-    client.mutate(MutationOptions(document: queryUpsertUser, variables: { 'google_uid': auth.user!.uid }))
-        .then((value) => print("Signed In as User #" + value.data!['user']['id'].toString()))
-        .catchError((err) => print("Unable to register sign in: " + err.toString()));
-
+    ValueNotifier<GraphQLClient> client = GraphQL.initailizeClient(auth.user!);
+    auth.client = client.value;
+    
     return GraphQLProvider(
-      client: notifier,
-      child: HomePage(),
+      client: client,
+      child: child,
     );
   }
-
-
-  Widget _Error(String s) {
-    return CenteredList(
-      children: [
-        WithPadding(child: Text(s)),
-      ],
-    );
-  }  
 }
