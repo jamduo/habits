@@ -4,11 +4,25 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:gql/ast.dart';
+
+DocumentNode queryUpsertUser = gql(r'''
+  mutation MyMutation($google_uid: String) {
+    user: insert_users_one(object: {google_uid: $google_uid, last_seen: "now()"}, on_conflict: {constraint: users_google_uid_key, update_columns: last_seen}) {
+      id
+      google_uid
+      last_seen
+    }
+  }
+''');
 
 class AuthProvider extends ChangeNotifier {
   GoogleSignIn _googleSignIn = GoogleSignIn();
   FirebaseAuth _auth = FirebaseAuth.instance;
+  GraphQLClient? _client;
+  int? user_id;
 
   void init() {
     print("Connected to firebase: " + Firebase.app().name);
@@ -26,6 +40,18 @@ class AuthProvider extends ChangeNotifier {
     final UserCredential authResult = await _auth.signInWithCredential(credential);
     final User? user = authResult.user;
 
+    return await _verifySignIn(user);
+  }
+
+  Future<User?> signInBackground() async {
+    if (canBackgroundSignIn) {
+      await _verifySignIn(_auth.currentUser);
+    } else {
+      return null;
+    }
+  }
+
+  Future<User> _verifySignIn(User? user) async {
     if (user != null) {
       assert(!user.isAnonymous);
       await user.getIdToken();
@@ -33,31 +59,13 @@ class AuthProvider extends ChangeNotifier {
       final User currentUser = _auth.currentUser!;
       assert(user.uid == currentUser.uid);
 
-      
+      _setUserId();
+
       notifyListeners();
       return currentUser;
     }
 
     throw Exception("Login Failed");
-  }
-
-  Future<User?> signInBackground() async {
-    if (canBackgroundSignIn) {
-      final User? user = _auth.currentUser;
-
-      if (user != null) {
-        assert(!user.isAnonymous);
-        await user.getIdToken();
-
-        
-        notifyListeners();
-        return _auth.currentUser!;
-      }
-
-      throw Exception("Login Failed");
-    } else {
-      return null;
-    }
   }
 
   User? get user {
@@ -72,6 +80,20 @@ class AuthProvider extends ChangeNotifier {
     await _googleSignIn.signOut();
     await _auth.signOut();
     notifyListeners();
+  }
+
+  void _setUserId() {
+    _client?.mutate(MutationOptions(document: queryUpsertUser, variables: { 'google_uid': user?.uid }))
+        .then((result) => user_id = result.data!['user']['id']);
+        // .then((value) => print("Signed In as User #" + value.data!['user']['id'].toString()))
+        // .catchError((err) => print("Unable to register sign in: " + err.toString()));
+  }
+
+  set client(GraphQLClient client) {
+    _client = client;
+    if (user_id == null) {
+      _setUserId();
+    }
   }
 
 }
