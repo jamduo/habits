@@ -32,11 +32,11 @@ class GraphQL {
     ),
   );
 
-   static final Link link = authLink.concat(httpLink).concat(websocketLink);
+  static final Link link = authLink.concat(httpLink).concat(websocketLink);
   //  static final Link link = authLink.concat(admin_authLink).concat(httpLink).concat(websocketLink);
-   static ValueNotifier<GraphQLClient> initailizeClient(User user) {
-     _user = user;
-     GraphQLClient client = GraphQLClient( cache: GraphQLCache(), link: link );
-     return ValueNotifier(client);
-   }
- }
+  static ValueNotifier<GraphQLClient> initailizeClient(User user) {
+    _user = user;
+    GraphQLClient client = GraphQLClient( cache: GraphQLCache(), link: link );
+    return ValueNotifier(client);
+  }
+}
