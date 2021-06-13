@@ -24,11 +24,8 @@ class AuthProvider extends ChangeNotifier {
   GraphQLClient? _client;
   int? user_id;
 
-  void init() {
-    print("Connected to firebase: " + Firebase.app().name);
-  }
-
   Future<User> signIn() async {    
+    _googleSignIn.signIn().timeout(Duration(seconds: 30));
     final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
     final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount!.authentication;
 
@@ -44,11 +41,19 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<User?> signInBackground() async {
-    if (canBackgroundSignIn) {
-      await _verifySignIn(_auth.currentUser);
-    } else {
-      return null;
-    }
+    final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signInSilently();
+    if (googleSignInAccount == null) return null;
+    final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.credential(
+      accessToken: googleSignInAuthentication.accessToken,
+      idToken: googleSignInAuthentication.idToken,
+    );
+
+    final UserCredential authResult = await _auth.signInWithCredential(credential);
+    final User? user = authResult.user;
+
+    return await _verifySignIn(user);
   }
 
   Future<User> _verifySignIn(User? user) async {
@@ -72,9 +77,9 @@ class AuthProvider extends ChangeNotifier {
     return _auth.currentUser;
   }
 
-  bool get canBackgroundSignIn {
-    return _auth.currentUser != null;
-  }
+  // bool get canBackgroundSignIn {
+  //   return _auth.currentUser != null;
+  // }
 
   Future<void> signOut() async {  
     await _googleSignIn.signOut();
