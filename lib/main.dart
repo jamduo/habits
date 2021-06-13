@@ -82,7 +82,6 @@ class RequireAuthenitcation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     AuthProvider auth = Provider.of<AuthProvider>(context, listen: true);
-    print(auth);
     return (auth.user == null) ? _notSignedIn(context, auth) : _withGraphQL(context, auth);
   }
 
@@ -94,7 +93,7 @@ class RequireAuthenitcation extends StatelessWidget {
           title: Text("Sign In"),
         ),
         body: CenteredList(children: [
-            auth.canBackgroundSignIn ? CircularProgressIndicator(color: Theme.of(context).accentColor) : SizedBox.shrink(),
+            // auth.canBackgroundSignIn ? CircularProgressIndicator(color: Theme.of(context).accentColor) : SizedBox.shrink(),
             Text('You are currently not logged in. Please sign in to continue.',),
             ElevatedButton(onPressed: () => auth.signIn(), child: Text("Sign In")),
           ],
