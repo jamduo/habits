@@ -2,12 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
-// 'https://hasura.jamduo.org/v1/graphql',
-// defaultHeaders: {
-//   'x-hasura-admin-secret': 'justinsmum',
-//   'X-GoogleUID': auth.user!.uid,
-// },
-final String host = "hasura.jamduo.org/v1/graphql";
+final String host = "habits.jamduo.org/v1/graphql";
 final String wssURI = "wss://" + host;
 final String httpURI = "https://" + host;
 
