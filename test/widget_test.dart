@@ -7,7 +7,7 @@
 
 // import 'package:flutter/material.dart';
 // import 'package:flutter_test/flutter_test.dart';
-
+import 'package:test/test.dart';
 // import 'package:habits/main.dart';
 
 void main() {
@@ -27,4 +27,8 @@ void main() {
   //   expect(find.text('0'), findsNothing);
   //   expect(find.text('1'), findsOneWidget);
   // });
+
+  test("An Example Test", () {
+    expect(1, 1);
+  });
 }
