@@ -17,7 +17,7 @@ env:
 jobs:
   build:
     name: Build & Test
-    environment: Production
+    # environment: Production
     runs-on: ubuntu-latest
 
     steps:
