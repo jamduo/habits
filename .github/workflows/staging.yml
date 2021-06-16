@@ -1,0 +1,88 @@
+# name: Staging CI/CD
+
+# # Controls when the action will run. 
+# on:
+#   # Triggers the workflow on push or pull request events but only for the master branch
+#   push:
+#     branches: [ development ]
+#   # pull_request:
+#   #   branches: [ development ]
+
+#   # Allows you to run this workflow manually from the Actions tab
+#   workflow_dispatch:
+
+# env:
+#   NODE_VERSION: '10.x' 
+
+# jobs:
+#   # This workflow contains a single job called "build"
+#   build:
+#     name: Build & Test
+#     environment: Staging
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Use Node.js ${{ env.NODE_VERSION }}
+#         uses: actions/setup-node@v1
+#         with:
+#           node-version: ${{ env.NODE_VERSION }}
+      
+#       # Cache NPM modules??
+#       - name: Get npm cache directory
+#         id: npm-cache-dir
+#         run: |
+#           echo "::set-output name=dir::$(npm config get cache)"
+#       - uses: actions/cache@v2
+#         id: npm-cache # use this to check for `cache-hit` ==> if: steps.npm-cache.outputs.cache-hit != 'true'
+#         with:
+#           path: ${{ steps.npm-cache-dir.outputs.dir }}
+#           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+#           restore-keys: |
+#             ${{ runner.os }}-node-
+      
+#       # Run App
+#       - name: npm install, build, and test
+#         run: |
+#           npm install
+#           npm run build --if-present
+#           npm run test --if-present
+          
+#   deploy:
+#     name: Deploy
+#     environment: Staging
+#     needs: build
+#     runs-on: [ ubuntu-latest ]
+
+#     steps:
+#       - id: "setup"
+#         name: "Setup"
+#         run: |
+#           echo "${{ secrets.SSH_RSA_KEY }}" > ssh_key.temp
+#           chmod 600 ssh_key.temp
+          
+#       - id: "deploy"
+#         name: "Checkout New Version"
+#         run: |
+#           echo "#!/bin/bash" > command.sh.temp
+#           echo "cd ${{ secrets.PROJECT_PATH }}" >> command.sh.temp
+#           echo "sudo git fetch origin" >> command.sh.temp
+#           echo "sudo git reset --hard origin/development" >> command.sh.temp
+#           echo "sudo git pull" >> command.sh.temp
+#           ssh ${{ secrets.HOST }} -p ${{ secrets.PORT }} -l ${{ secrets.USERNAME }} -i ssh_key.temp -o "StrictHostKeyChecking=no" < command.sh.temp
+#           rm command.sh.temp
+
+#       - id: "install"
+#         name: "Install / Deploy New Version"
+#         run: |
+#           echo "#!/bin/bash" > command.sh.temp
+#           echo "cd ${{ secrets.PROJECT_PATH }}" >> command.sh.temp
+#           echo "sudo npm install" >> command.sh.temp
+#           echo "sudo npm run build && sudo systemctl restart ${{ secrets.SERVICE_NAME }}" >> command.sh.temp
+#           ssh ${{ secrets.HOST }} -p ${{ secrets.PORT }} -l ${{ secrets.USERNAME }} -i ssh_key.temp -o "StrictHostKeyChecking=no" < command.sh.temp
+#           rm command.sh.temp
+
+#       - id: "cleanup"
+#         name: "Cleanup"
+#         run: |
+#           rm ssh_key.temp

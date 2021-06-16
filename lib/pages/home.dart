@@ -100,9 +100,9 @@ class HomePage extends StatelessWidget {
                     true ? Icons.favorite : Icons.favorite_border,
                     color: true ? Colors.red : null,
                   ),
-                  onPressed: () { },
+                  onPressed: null,
                 ),
-                onTap: () { },
+                // onTap: () { },
               ),
             );
           }

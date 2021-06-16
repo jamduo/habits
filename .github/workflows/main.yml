@@ -1,0 +1,85 @@
+name: Production CI/CD
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  # pull_request:
+  #   branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  FLUTTER_VERSION: '2.2.2' 
+
+jobs:
+  build:
+    name: Build & Test
+    environment: Production
+    runs-on: ubuntu-latest
+
+    steps:
+      # Get Code     
+      - uses: actions/checkout@v2
+
+      # - uses: actions/setup-java@v1 # Setup Java environment in order to build the Android app.
+      #   with:
+      #     java-version: '12.x'
+      
+      - name: Use Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@v1
+        with:
+          channel: 'stable' # 'dev', 'alpha', 'beta', default to: 'stable'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+      
+      # Get flutter dependencies.
+      - run: flutter pub get
+      
+      # # Check for any formatting issues in the code.
+      # - run: flutter format --set-exit-if-changed .
+      
+      # Statically analyze the Dart code for any errors.
+      - run: flutter analyze .
+      
+      # Run widget tests for our flutter project.
+      - run: flutter test
+      
+      # Build web version.
+      - run: flutter build web --release
+          
+  deploy:
+    name: Deploy
+    environment: Production
+    needs: build
+    runs-on: [ ubuntu-latest ]
+
+    steps:
+      - name: "Setup"
+        run: |
+          echo "${{ secrets.SSH_RSA_KEY }}" > ssh_key.temp
+          chmod 600 ssh_key.temp
+          
+      - name: "Checkout New Version"
+        run: |
+          echo "#!/bin/bash" > command.sh.temp
+          echo "cd ${{ secrets.PROJECT_PATH }}" >> command.sh.temp
+          echo "git fetch origin" >> command.sh.temp
+          echo "git reset --hard origin/master" >> command.sh.temp
+          echo "git pull" >> command.sh.temp
+          echo "flutter pub get" >> command.sh.temp
+          ssh ${{ secrets.HOST }} -p ${{ secrets.PORT }} -l ${{ secrets.USERNAME }} -i ssh_key.temp -o "StrictHostKeyChecking=no" < command.sh.temp
+          rm command.sh.temp
+
+      - name: "Install / Deploy New Version"
+        run: |
+          echo "#!/bin/bash" > command.sh.temp
+          echo "cd ${{ secrets.PROJECT_PATH }}" >> command.sh.temp
+          echo "flutter build web --release" >> command.sh.temp
+          ssh ${{ secrets.HOST }} -p ${{ secrets.PORT }} -l ${{ secrets.USERNAME }} -i ssh_key.temp -o "StrictHostKeyChecking=no" < command.sh.temp
+          rm command.sh.temp
+
+      - name: "Cleanup"
+        run: |
+          rm ssh_key.temp
