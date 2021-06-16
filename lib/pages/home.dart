@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:habits/auth/auth_provider.dart';
-import 'package:habits/pages/util.dart';
 import 'package:provider/provider.dart';
 import 'package:gql/ast.dart';
 
@@ -44,7 +43,7 @@ class HomePage extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           final GraphQLClient client = GraphQLProvider.of(context).value;
-          client.mutate(MutationOptions(document: queryAddHabit, variables: { 'owner_id': auth.user_id, 'title': "testy" }))
+          client.mutate(MutationOptions(document: queryAddHabit, variables: { 'owner_id': auth.userID, 'title': "testy" }))
             .then((value) => print("Added habit #" + value.data!['habit']['id'].toString() + " " + value.data!['habit']['title']))
             .catchError((err) => print("Unable to add a habit: " + err.toString()));
         },
@@ -55,7 +54,7 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _build(BuildContext context) {
-    User current_user = Provider.of<AuthProvider>(context).user!;
+    // User current_user = Provider.of<AuthProvider>(context).user!;
     return Query(
       options: QueryOptions(
         document: queryAllHabits,
@@ -97,7 +96,9 @@ class HomePage extends StatelessWidget {
                 ),
                 trailing: IconButton(
                   icon: Icon(
+                    // ignore: dead_code
                     true ? Icons.favorite : Icons.favorite_border,
+                    // ignore: dead_code
                     color: true ? Colors.red : null,
                   ),
                   onPressed: null,

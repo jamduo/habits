@@ -1,8 +1,5 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +19,7 @@ class AuthProvider extends ChangeNotifier {
   GoogleSignIn _googleSignIn = GoogleSignIn();
   FirebaseAuth _auth = FirebaseAuth.instance;
   GraphQLClient? _client;
-  int? user_id;
+  int? userID;
 
   Future<User> signIn() async {    
     _googleSignIn.signIn().timeout(Duration(seconds: 30));
@@ -89,14 +86,14 @@ class AuthProvider extends ChangeNotifier {
 
   void _setUserId() {
     _client?.mutate(MutationOptions(document: queryUpsertUser, variables: { 'google_uid': user?.uid }))
-        .then((result) => user_id = result.data!['user']['id']);
+        .then((result) => userID = result.data!['user']['id']);
         // .then((value) => print("Signed In as User #" + value.data!['user']['id'].toString()))
         // .catchError((err) => print("Unable to register sign in: " + err.toString()));
   }
 
   set client(GraphQLClient client) {
     _client = client;
-    if (user_id == null) {
+    if (userID == null) {
       _setUserId();
     }
   }

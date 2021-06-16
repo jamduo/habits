@@ -6,7 +6,7 @@ final String host = "habits.jamduo.org/v1/graphql";
 final String wssURI = "wss://" + host;
 final String httpURI = "https://" + host;
 
-final String admin_passphrase = "";
+final String adminPassphrase = "";
 
 
 class GraphQL {

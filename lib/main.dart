@@ -66,6 +66,7 @@ class _AppState extends State<App> {
     );
   }
 
+  // ignore: non_constant_identifier_names
   Widget _Error(String s) {
     return CenteredList(
       children: [
