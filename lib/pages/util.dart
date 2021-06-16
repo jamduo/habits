@@ -15,7 +15,7 @@ class Loading extends StatelessWidget {
   }
 }
 
-String JsonToString(Map<String, dynamic> json) {
+String jsonToString(Map<String, dynamic> json) {
   return "(" + json.values.map((value) => value.toString()).join(", ") + ")";
 }
 
