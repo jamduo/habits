@@ -46,7 +46,7 @@ jobs:
       - run: flutter test
       
       # Build web version.
-      - run: flutter build web --release
+      - run: flutter build web --release --dart-define=GraphQL_Host=staging.habits.jamduo.org/v1/graphql
           
   deploy:
     name: Deploy
