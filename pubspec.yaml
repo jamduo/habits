@@ -32,6 +32,9 @@ dependencies:
   # cloud_firestore: ^1.0.1
   google_sign_in: ^5.0.4
 
+  flutter_local_notifications: ^6.0.0
+  awesome_notifications: ^0.0.6+10
+  flutter_launcher_icons: ^0.9.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -41,6 +44,12 @@ dev_dependencies:
   test: ^1.16.8
   flutter_test:
     sdk: flutter
+
+flutter_icons: #Run command: flutter pub run flutter_launcher_icons:main
+  android: true
+  # ios: true
+  image_path: "./assets/temp.png"
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

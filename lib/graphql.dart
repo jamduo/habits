@@ -2,9 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
-const String host = String.fromEnvironment("GraphQL_Host", defaultValue: "staging.habits.jamduo.org/v1/graphql");
-final String wssURI = "wss://" + host;
-final String httpURI = "https://" + host;
+const String host = String.fromEnvironment("GraphQL_Host", defaultValue: "staging.habits.jamduo.org/hasura/v1/graphql");
+const bool useSSL = bool.fromEnvironment("GraphQL_Host_Secure", defaultValue: false);
+final String wssURI = (useSSL ? "wss://" : "ws://") + host;
+final String httpURI = (useSSL ? "https://" : "http://") + host;
 final String adminPassphrase = "";
 
 
@@ -31,7 +32,7 @@ class GraphQL {
     ),
   );
 
-  static final Link link = authLink.concat(httpLink).concat(websocketLink);
+  static final Link link = authLink.concat(websocketLink).concat(httpLink);
   //  static final Link link = authLink.concat(admin_authLink).concat(httpLink).concat(websocketLink);
   static ValueNotifier<GraphQLClient> initailizeClient(User user) {
     _user = user;
