@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:habits/auth/auth_provider.dart';
 import 'package:habits/graphql.dart';
+import 'package:habits/pages/habit.dart';
 import 'package:habits/pages/home.dart';
 import 'package:habits/pages/util.dart';
 import 'package:habits/theme.dart';
@@ -10,8 +11,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
+import 'notifications/notification_service.dart' if (dart.library.html) 'notifications/notification_service_web.dart';
+
+// import 'notification_service.dart';
+// import 'dart:io' show Platform;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // if (Platform.isAndroid) {
+  //   // Android-specific code
+  await NotificationService().init();
+  // }
   runApp(new App());
 }
 
@@ -31,7 +41,10 @@ class _AppState extends State<App> {
       themeMode: ThemeMode.system,
       theme: makeLightTheme(),
       darkTheme: makeDarkTheme(),
-      home: _withFirebaseApp(context),
+      initialRoute: "/",
+      routes: {
+        "/": (BuildContext content) => _withFirebaseApp(context),
+      }
     );
   }
 
@@ -62,7 +75,34 @@ class _AppState extends State<App> {
           value: AuthProvider(),
         ),
       ],
-      child: RequireAuthenitcation(child: HomePage()),
+      child: RequireAuthenitcation(
+        child: _navigator(context)
+        // HomePage()
+      ),
+    );
+  }
+
+  Widget _navigator(BuildContext context) {
+    return Navigator(
+      initialRoute: "/",
+      onGenerateRoute: (RouteSettings settings) {
+        WidgetBuilder builder;
+
+        switch (settings.name) {
+          case "/":
+            builder = (BuildContext content) => HomePage();
+            break;
+          case "/habit":
+            builder = (BuildContext content) => HabitPage();
+            break;
+
+          default:
+            throw Exception('Invalid route: ${settings.name}');
+        }
+
+        return MaterialPageRoute<void>(builder: builder, settings: settings);
+       },
+
     );
   }
 

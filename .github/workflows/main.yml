@@ -47,7 +47,7 @@ jobs:
       - run: flutter test
       
       # Build web version.
-      - run: flutter build web --release --dart-define=GraphQL_Host=habits.jamduo.org/v1/graphql
+      - run: flutter build web --release --dart-define=GraphQL_Host=habits.jamduo.org/hasura/v1/graphql --dart-define=GraphQL_Host_Secure=true
           
   deploy:
     name: Deploy
@@ -76,7 +76,7 @@ jobs:
         run: |
           echo "#!/bin/bash" > command.sh.temp
           echo "cd ${{ secrets.PROJECT_PATH }}" >> command.sh.temp
-          echo "flutter build web --release --dart-define=GraphQL_Host=habits.jamduo.org/v1/graphql" >> command.sh.temp
+          echo "flutter build web --release --dart-define=GraphQL_Host=habits.jamduo.org/hasura/v1/graphql --dart-define=GraphQL_Host_Secure=true" >> command.sh.temp
           ssh ${{ secrets.HOST }} -p ${{ secrets.PORT }} -l ${{ secrets.USERNAME }} -i ssh_key.temp -o "StrictHostKeyChecking=no" < command.sh.temp
           rm command.sh.temp
 
