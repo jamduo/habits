@@ -7,7 +7,7 @@ class NotificationService {
   // final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   final AwesomeNotifications _notificationManager = AwesomeNotifications();
 
-  static final NotificationChannels = [
+  static final notificationChannels = [
         NotificationChannel(
             channelKey: 'basic_channel',
             channelName: 'Basic Notifications',
@@ -16,7 +16,7 @@ class NotificationService {
             ledColor: Colors.white
         )
   ];
-  static final defaultChannel = NotificationChannels[0];
+  static final defaultChannel = notificationChannels[0];
 
   bool _initialized = false;
 
@@ -31,7 +31,7 @@ class NotificationService {
     // Initialize the manager and channels.
     await _notificationManager.initialize(
       null /* 'resource://drawable/res_app_icon' */,
-      NotificationChannels
+      notificationChannels
     );
     // _notificationManager.setChannel(defaultChannel);
 

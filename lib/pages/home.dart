@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:habits/auth/auth_provider.dart';
-import 'package:habits/pages/habit.dart';
 import 'package:habits/pages/util.dart';
 import 'package:provider/provider.dart';
 import 'package:gql/ast.dart';

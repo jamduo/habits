@@ -5,7 +5,7 @@ import 'package:habits/dialog_box.dart';
 import 'package:habits/pages/util.dart';
 import 'package:gql/ast.dart';
 
-DocumentNode GetHabit = gql(r'''
+DocumentNode getHabit = gql(r'''
   subscription MySubscription($id: Int!) {
     habit: habits_by_pk(id: $id) {
       id
@@ -15,7 +15,7 @@ DocumentNode GetHabit = gql(r'''
   }
 ''');
 
-DocumentNode DeleteHabit = gql(r'''
+DocumentNode deleteHabit = gql(r'''
   mutation DeleteHabit($id: Int!) {
     habit: delete_habits_by_pk(id: $id) {
       id
@@ -34,7 +34,7 @@ class HabitPage extends StatelessWidget {
     int id = (args?["id"] != null) ? (args?["id"]) : 0;
 
     return Subscription(
-      options: SubscriptionOptions(document: GetHabit, variables: { "id": id }),
+      options: SubscriptionOptions(document: getHabit, variables: { "id": id }),
       builder: (QueryResult result, { VoidCallback? refetch, FetchMore? fetchMore }) {
         if (result.hasException) {
           return _layout(
@@ -97,7 +97,7 @@ class HabitPage extends StatelessWidget {
           String? choice = await showAlertDialog(context, "Delete Confirmation", "Are you sure you want to delete '${habit["title"]}' (ID: ${habit["id"]})", ["Yes", "No"]);
           if (choice == "Yes") {
             final GraphQLClient client = GraphQLProvider.of(context).value;
-            client.mutate(MutationOptions(document: DeleteHabit, variables: { 'id': habit["id"] }))
+            client.mutate(MutationOptions(document: deleteHabit, variables: { 'id': habit["id"] }))
               .then((value) => Navigator.pop(context))
               .catchError((err) => print("Unable to delete this habit: " + err.toString()));
           }
