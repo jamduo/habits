@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habits/pages/habit.dart';
 
 class NotificationService {
   static final NotificationService _notificationService = NotificationService._internal();
@@ -31,9 +32,15 @@ class NotificationService {
     return Future.value();
   }
 
-  Future<bool> sendNotification({ required int id }) {
+  Future<bool> sendNotification(Habit habit) {
     if (!_initialized) throw new Exception("Notification Service is not initialized yet.");
     return Future.value(true);
+  }
+
+  Future<List<dynamic>> getNotifications() {
+    if (!_initialized) throw new Exception("Notification Service is not initialized yet.");
+    
+    return Future.value([]);
   }
 
   Future selectNotification(String? payload) async {

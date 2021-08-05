@@ -1,41 +1,25 @@
 import 'package:flutter/material.dart';
 
-dynamic makeLightTheme() {
+dynamic makeTheme(Brightness brightness) {
+  final MaterialColor primary = Colors.deepPurple;
+  final MaterialColor accent = Colors.purple;
+
   return ThemeData(
-    brightness: Brightness.light,
-    primaryColor: Colors.deepPurple,
-    accentColor: Colors.purple,
-    buttonTheme: ButtonThemeData(
-      buttonColor: Colors.deepPurple,
-      textTheme: ButtonTextTheme.primary,
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: TextButton.styleFrom(
-        backgroundColor: Colors.deepPurple,
-      ),
-    ),
+    brightness: brightness,
+    primarySwatch: primary,
+    primaryColor: primary,
+    accentColor: accent,
+    visualDensity: VisualDensity.adaptivePlatformDensity,
     floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: Colors.deepPurple
+      backgroundColor: primary,
     ),
   );
 }
 
+dynamic makeLightTheme() {
+  return makeTheme(Brightness.light);
+}
+
 dynamic makeDarkTheme() {
-  return ThemeData(
-    brightness: Brightness.dark,
-    primaryColor: Colors.deepPurple,
-    accentColor: Colors.purple,
-    buttonTheme: ButtonThemeData(
-      buttonColor: Colors.deepPurple,
-      textTheme: ButtonTextTheme.primary,
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: TextButton.styleFrom(
-        backgroundColor: Colors.deepPurple,
-      ),
-    ),
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: Colors.deepPurple
-    ),
-  );
+  return makeTheme(Brightness.dark);
 }

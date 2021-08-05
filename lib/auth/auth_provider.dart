@@ -86,9 +86,9 @@ class AuthProvider extends ChangeNotifier {
 
   void _setUserId() {
     _client?.mutate(MutationOptions(document: queryUpsertUser, variables: { 'google_uid': user?.uid }))
-        .then((result) => userID = result.data!['user']['id']);
-        // .then((value) => print("Signed In as User #" + value.data!['user']['id'].toString()))
-        // .catchError((err) => print("Unable to register sign in: " + err.toString()));
+        .then((result) => result.data!['user'])
+        .then((user) { userID = user['id']; print("Signed In as User #" + userID.toString()); })
+        .catchError((err) => print("Unable to register sign in: " + err.toString()));
   }
 
   set client(GraphQLClient client) {

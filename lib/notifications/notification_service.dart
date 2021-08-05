@@ -1,5 +1,6 @@
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:habits/pages/habit.dart';
 // import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService {
@@ -56,29 +57,46 @@ class NotificationService {
 
   Future<void> cancelAllNotifications() {
     if (!_initialized) throw new Exception("Notification Service is not initialized yet.");
-    return _notificationManager.cancelAllSchedules();
+    return _notificationManager.cancelAll();// .cancelAllSchedules();
   }
 
-  Future<bool> sendNotification({ required int id }) {
+  Future<bool> sendNotification(Habit habit) {
     if (!_initialized) throw new Exception("Notification Service is not initialized yet.");
     
     NotificationContent content = NotificationContent(
-      id: id,
+      id: habit.id!,
       channelKey: defaultChannel.channelKey,
-      title: "Test",
-      body: "Schedule 2",
+      title: habit.title,
+      body: "Test",
       displayOnForeground: true,
       displayOnBackground: true,
     );
 
     
-    NotificationSchedule schedule = NotificationInterval(interval: 10, allowWhileIdle: true, repeats: true);
-    // NotificationSchedule schedule = NotificationCalendar(second: 1, allowWhileIdle: true, repeats: true);
+    // NotificationSchedule schedule = NotificationInterval(interval: 10, allowWhileIdle: true, repeats: true);
+    NotificationSchedule schedule = NotificationCalendar(
+      month: habit.month,
+      day: habit.day,
+      hour: habit.hour,
+      minute: habit.minute,
+      second: habit.second,
+      weekday: habit.day_of_week,
+      weekOfMonth: habit.week_of_month,
+      weekOfYear: habit.week_of_year,
+      allowWhileIdle: true,
+      repeats: true
+    );
 
     return _notificationManager.createNotification(
       content: content,
       schedule: schedule,
     );
+  }
+
+  Future<List<PushNotification>> getNotifications() {
+    if (!_initialized) throw new Exception("Notification Service is not initialized yet.");
+    
+    return _notificationManager.listScheduledNotifications();
   }
 
   Future selectNotification(String? payload) async {

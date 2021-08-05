@@ -2,15 +2,21 @@ import 'package:flutter/material.dart';
 
 class Loading extends StatelessWidget {
   final String message;
-  const Loading({ Key? key, required this.message }) : super(key: key);
+  final double size;
+  final Widget? child;
+  const Loading({ Key? key, this.child, required this.message, this.size = 50 }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return CenteredList(
-      children: [
-        WithPadding(child: CircularProgressIndicator()), //color: Theme.of(context).accentColor
+    final List<Widget> children = [
+        WithPadding(child: Container(height: size, width: size, child: CircularProgressIndicator(strokeWidth: size * 0.1,))), //color: Theme.of(context).accentColor
         WithPadding(child: Text(message)),
-      ],
+    ];
+    if (child != null)
+      children.add(child!);
+      
+    return CenteredList(
+      children: children,
     );
   }
 }
@@ -47,6 +53,21 @@ class WithPadding extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.all(padding),
       child: child,
+    );
+  }
+}
+
+ // ignore: non_constant_identifier_names
+class Error extends StatelessWidget {
+  String message;
+  Error({ Key? key, required this.message }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return CenteredList(
+      children: [
+        WithPadding(child: Text(message)),
+      ],
     );
   }
 }

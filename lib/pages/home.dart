@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:habits/auth/auth_provider.dart';
+import 'package:habits/graphql.dart';
+import 'package:habits/pages/habit.dart';
 import 'package:habits/pages/util.dart';
 import 'package:provider/provider.dart';
 import 'package:gql/ast.dart';
@@ -34,11 +36,23 @@ DocumentNode subscriptionHabits = gql(r'''
     habits {
       id
       title
+      month
+      day
+      hour
+      minute
+      second
+      day_of_week
+      week_of_month
+      week_of_year
+      created_at
+      updated_at
     }
   }
 ''');
 
 class HomePage extends StatelessWidget {
+  static final String route = r'^/$';
+
   @override
   Widget build(BuildContext context) {
     AuthProvider auth = Provider.of<AuthProvider>(context);
@@ -50,59 +64,40 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text("$name's Habit Home"),
         actions: [
+          IconButton(icon: Icon(Icons.ac_unit), onPressed: () async {
+            // final GraphQLClient client = GraphQLProvider.of(context).value;
+            final GraphQLClient client = Provider.of<DatabaseProvider>(context).client!;
+            final n = NotificationService();
+            // final habits = await Habit.getAll(client);
+            // await n.cancelAllNotifications();
+            // for (final habit in habits) {
+            //   if (habit.id == 1)
+            //     n.sendNotification(habit);
+            // }
+            final notifications = await n.getNotifications();
+            print(notifications);
+          }),
           LogoutIcon(),
         ],
       ),
       body: _build(context),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            FloatingActionButton(
-              onPressed: () async { await NotificationService().sendNotification(id: Random().nextInt(1<<31)); },
-              tooltip: 'Add Notification',
-              backgroundColor: Color.fromRGBO(0, 200, 0, 0.8),
-              child: Icon(Icons.add),
-            ),
-            FloatingActionButton(
-              onPressed: () async { await NotificationService().cancelAllNotifications(); },
-              tooltip: 'Remove All Notifications',
-              backgroundColor: Color.fromRGBO(0, 200, 0, 0.8),
-              child: Icon(Icons.remove),
-            ),
-            FloatingActionButton(
-              onPressed: () async {
-                final GraphQLClient client = GraphQLProvider.of(context).value;
-                client.mutate(MutationOptions(document: queryAddHabit, variables: { 'owner_id': auth.userID, 'title': "testy" }))
-                  .then((value) => print("Added habit #" + value.data!['habit']['id'].toString() + " " + value.data!['habit']['title']))
-                  .catchError((err) => print("Unable to add a habit: " + err.toString()));
-                // print(await user.getIdToken());
-                // client.subscribe(SubscriptionOptions(document: subscriptionUsers)).listen((event) { print(event.data!["users"]); });
-                // const AndroidNotificationDetails androidPlatformChannelSpecifics = 
-                //   AndroidNotificationDetails(
-                //       "channelId", 
-                //       "channelName",
-                //       "channelDescription",
-                //       importance: Importance.defaultImportance,
-                //       priority: Priority.defaultPriority
-                //   );
-                // const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
-                // await NotificationService().flutterLocalNotificationsPlugin.periodicallyShow(0, 'repeating title', 'repeating body', RepeatInterval.everyMinute, platformChannelSpecifics, androidAllowWhileIdle: true);
-                // await NotificationService().flutterLocalNotificationsPlugin.show(0, "title", "body", platformChannelSpecifics, payload: "data");
-              },
-              tooltip: 'Add Habit',
-              child: Icon(Icons.add),
-            ),
-          ],
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+         final GraphQLClient client = Provider.of<DatabaseProvider>(context).client!;
+          client.mutate(MutationOptions(document: queryAddHabit, variables: { 'owner_id': auth.userID, 'title': "testy" }))
+            .then((value) => print("Added habit #" + value.data!['habit']['id'].toString() + " " + value.data!['habit']['title']))
+            .catchError((err) => print("Unable to add a habit: " + err.toString()));
+          print(await user.getIdToken());
+        },
+        tooltip: 'Add Habit',
+        child: Icon(Icons.add),
       ),
     );
   }
 
   Widget _build(BuildContext context) {
     // User current_user = Provider.of<AuthProvider>(context).user!;
+
     return Subscription(
       options: SubscriptionOptions(document: subscriptionHabits),
       // Just like in apollo refetch() could be used to manually trigger a refetch
@@ -149,7 +144,7 @@ class HomePage extends StatelessWidget {
                   onPressed: null,
                 ),
                 onTap: () {
-                  Navigator.pushNamed(context, "/habit", arguments: { "id": habit['id'] }); },
+                  Navigator.pushNamed(context, "/habit/${habit['id']}"); },
               ),
             );
           }
