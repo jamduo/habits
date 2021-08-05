@@ -84,8 +84,15 @@ class AuthenticationLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final FirebaseProvider firebase = Provider.of(context, listen: true);
+
     return ChangeNotifierProvider(
-      create: (_) => AuthProvider(),
+      create: (_) { 
+        var auth = AuthProvider();
+        if (firebase.app != null) auth.firebase = firebase.app!;
+        firebase.addListener(() { if (firebase.app != null) auth.firebase = firebase.app!; });
+        return auth;
+      },
       child: _child,
     );
   }

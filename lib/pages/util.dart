@@ -57,10 +57,10 @@ class WithPadding extends StatelessWidget {
   }
 }
 
- // ignore: non_constant_identifier_names
-class Error extends StatelessWidget {
+// ignore: must_be_immutable
+class ErrorMessage extends StatelessWidget {
   String message;
-  Error({ Key? key, required this.message }) : super(key: key);
+  ErrorMessage({ Key? key, required this.message }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

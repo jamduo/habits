@@ -61,14 +61,14 @@ class RouteConfiguration {
     // // If no match was found, we let [WidgetsApp.onUnknownRoute] handle it.
     // return null;
     return MaterialPageRoute<void>(
-      builder: (BuildContext context) => Scaffold( body: Error(message: "404 Not found") ),
+      builder: (BuildContext context) => Scaffold( body: ErrorMessage(message: "404 Not found") ),
       settings: settings,
     );
   }
 
   static Route<dynamic>? onUnknownRoute(RouteSettings settings) {
     return MaterialPageRoute<void>(
-      builder: (BuildContext context) => Scaffold( body: Error(message: "404 Not found") ),
+      builder: (BuildContext context) => Scaffold( body: ErrorMessage(message: "404 Not found") ),
       settings: settings,
     );
   }

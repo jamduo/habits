@@ -46,8 +46,11 @@ class Habit {
   int? hour;
   int? minute;
   int? second;
+  // ignore: non_constant_identifier_names
   int? day_of_week;
+  // ignore: non_constant_identifier_names
   int? week_of_month;
+  // ignore: non_constant_identifier_names
   int? week_of_year;
 
 

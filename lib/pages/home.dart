@@ -1,15 +1,11 @@
-import 'dart:math';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:habits/auth/auth_provider.dart';
 import 'package:habits/graphql.dart';
-import 'package:habits/pages/habit.dart';
 import 'package:habits/pages/util.dart';
 import 'package:provider/provider.dart';
 import 'package:gql/ast.dart';
-// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:habits/notifications/notification_service.dart' if (dart.library.html) 'package:habits/notifications/notification_service_web.dart';
 
 DocumentNode queryAddHabit = gql(r'''
@@ -55,7 +51,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AuthProvider auth = Provider.of<AuthProvider>(context);
+    AuthProvider auth = Provider.of<AuthProvider>(context, listen: true);
     User user = auth.user!;
     
     String name = user.displayName ?? "Not Logged In";
@@ -66,7 +62,6 @@ class HomePage extends StatelessWidget {
         actions: [
           IconButton(icon: Icon(Icons.ac_unit), onPressed: () async {
             // final GraphQLClient client = GraphQLProvider.of(context).value;
-            final GraphQLClient client = Provider.of<DatabaseProvider>(context).client!;
             final n = NotificationService();
             // final habits = await Habit.getAll(client);
             // await n.cancelAllNotifications();

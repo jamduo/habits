@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -16,14 +17,37 @@ DocumentNode queryUpsertUser = gql(r'''
 ''');
 
 class AuthProvider extends ChangeNotifier {
-  GoogleSignIn _googleSignIn = GoogleSignIn();
-  FirebaseAuth _auth = FirebaseAuth.instance;
+  GoogleSignIn? _googleSignIn;
+  FirebaseApp? _firebase;
+  FirebaseAuth? _auth;
   GraphQLClient? _client;
   int? userID;
 
-  Future<User> signIn() async {    
-    _googleSignIn.signIn().timeout(Duration(seconds: 30));
-    final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
+  set firebase(FirebaseApp? app) {
+    _firebase = app;
+    _googleSignIn = GoogleSignIn();
+    _auth = FirebaseAuth.instance;
+
+    notifyListeners();
+  }
+
+  bool get initialized {
+    return _firebase != null && _googleSignIn != null && _auth != null;
+  }
+
+  void mustBeInit() {
+    if (!initialized) {
+      throw new Exception("Auth Provider not initialized");
+    }
+  }
+
+  Future<User> signIn() async {   
+    mustBeInit();
+    var googleSignIn = _googleSignIn!;
+    var auth = _auth!;
+
+    googleSignIn.signIn().timeout(Duration(seconds: 30));
+    final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
     final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount!.authentication;
 
     final AuthCredential credential = GoogleAuthProvider.credential(
@@ -31,14 +55,18 @@ class AuthProvider extends ChangeNotifier {
       idToken: googleSignInAuthentication.idToken,
     );
 
-    final UserCredential authResult = await _auth.signInWithCredential(credential);
+    final UserCredential authResult = await auth.signInWithCredential(credential);
     final User? user = authResult.user;
 
     return await _verifySignIn(user);
   }
 
   Future<User?> signInBackground() async {
-    final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signInSilently();
+    mustBeInit();
+    var googleSignIn = _googleSignIn!;
+    var auth = _auth!;
+
+    final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signInSilently();
     if (googleSignInAccount == null) return null;
     final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
 
@@ -47,18 +75,21 @@ class AuthProvider extends ChangeNotifier {
       idToken: googleSignInAuthentication.idToken,
     );
 
-    final UserCredential authResult = await _auth.signInWithCredential(credential);
+    final UserCredential authResult = await auth.signInWithCredential(credential);
     final User? user = authResult.user;
 
     return await _verifySignIn(user);
   }
 
   Future<User> _verifySignIn(User? user) async {
+    mustBeInit();
+    var auth = _auth!;
+
     if (user != null) {
       assert(!user.isAnonymous);
       await user.getIdToken();
 
-      final User currentUser = _auth.currentUser!;
+      final User currentUser = auth.currentUser!;
       assert(user.uid == currentUser.uid);
 
       _setUserId();
@@ -71,16 +102,19 @@ class AuthProvider extends ChangeNotifier {
   }
 
   User? get user {
-    return _auth.currentUser;
+    return _auth?.currentUser;
   }
 
   // bool get canBackgroundSignIn {
   //   return _auth.currentUser != null;
   // }
 
-  Future<void> signOut() async {  
-    await _googleSignIn.signOut();
-    await _auth.signOut();
+  Future<void> signOut() async {  mustBeInit();
+    var googleSignIn = _googleSignIn!;
+    var auth = _auth!;
+
+    await googleSignIn.signOut();
+    await auth.signOut();
     notifyListeners();
   }
 
@@ -88,7 +122,7 @@ class AuthProvider extends ChangeNotifier {
     _client?.mutate(MutationOptions(document: queryUpsertUser, variables: { 'google_uid': user?.uid }))
         .then((result) => result.data!['user'])
         .then((user) { userID = user['id']; print("Signed In as User #" + userID.toString()); })
-        .catchError((err) => print("Unable to register sign in: " + err.toString()));
+        .catchError((err) { print("Unable to register sign in: " + err.toString()); });
   }
 
   set client(GraphQLClient client) {
